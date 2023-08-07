@@ -19,7 +19,8 @@ from exchange_app import views
 from swagger import schema_view
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+# urls.py
+from exchange_app.views import *
 
 
 
@@ -33,8 +34,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), # Эндпоинт для обновления токена доступа
     path('api/books/', views.BookListCreateView.as_view(), name='book-list-create'),
     path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
+    path('api/book_exchanges/', BookExchangeListCreateView.as_view(), name='book-exchange-create'),
+    path('api/book_exchanges/<int:pk>/', BookExchangeDetailView.as_view(), name='book-exchange-detail'),
 
-
+ 
 
     path('swagger<str:format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

@@ -1,14 +1,16 @@
 from django.contrib.auth.models import User
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework import generics
-from .serializers import UserSerializer, BookSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.views import obtain_auth_token
-from .models import Book
+from .models import *
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
 
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all()
@@ -22,6 +24,8 @@ class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
 
 
 
@@ -57,6 +61,7 @@ def custom_refresh_token(request):
 
 
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def custom_login(request):
@@ -84,3 +89,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             }
             return Response(data, status=status.HTTP_200_OK)
         return response
+    
+
+
+
+class BookExchangeListCreateView(ListCreateAPIView):
+    serializer_class = BookExchangeSerializer
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [AllowAny ]
+
+    def get_queryset(self):
+        return Exchange.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(requester=self.request.user)
+
+class BookExchangeDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Exchange.objects.all()
+    serializer_class = BookExchangeSerializer

@@ -1,6 +1,8 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.translation import gettext_lazy as _
+# from .models import Book
 
 
 class User(AbstractBaseUser):
@@ -10,7 +12,6 @@ class User(AbstractBaseUser):
     phone = models.CharField(max_length=255, blank=True, null=True, verbose_name='Phone Number')
     password = models.CharField(max_length=255, blank=True, null=True, verbose_name='Password')
     city = models.CharField(max_length=155, blank=True, null=True, verbose_name='Город')
-    country = models.CharField(max_length=155, blank=True, null=True, verbose_name='Страна')
 
 
     class Meta:
@@ -38,3 +39,31 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Status(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Статус')
+
+    def __str__(self) -> str:
+        return self.name
+    
+
+
+
+class Exchange(models.Model):
+    user = models.ForeignKey(User, related_name='user_exchanges', on_delete=models.CASCADE)
+    user1 = models.ForeignKey(User, related_name='user1_exchanges', on_delete=models.CASCADE)
+    book = models.OneToOneField(Book, related_name='book_exchanges', on_delete=models.CASCADE)
+    book1 = models.OneToOneField(Book, related_name='book1_exchanges', on_delete=models.CASCADE)
+    status = models.ForeignKey(Status, related_name='book_status', on_delete=models.CASCADE, null=True, blank=True)
+
+    def get_user_books(self):
+        # Здесь теперь импорт Book находится внутри функции
+        from .models import Book
+        # Используем поле ForeignKey для доступа к связанной модели User
+        return self.user.book_set.all()
+    
+
+    def __str__(self):
+        return f"{self.user.username}'s exchange for {self.book.title}"
+
