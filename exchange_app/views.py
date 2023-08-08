@@ -1,15 +1,22 @@
 from django.contrib.auth.models import User
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.authtoken.views import obtain_auth_token
-from .models import *
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.parsers import MultiPartParser, FormParser
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListAPIView
+from django.db.models import Q
+from .serializers import UserSerializer, BookSerializer, BookExchangeSerializer
+from .models import *
+
+
 
 
 class BookListCreateView(generics.ListCreateAPIView):
@@ -107,3 +114,11 @@ class BookExchangeListCreateView(ListCreateAPIView):
 class BookExchangeDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Exchange.objects.all()
     serializer_class = BookExchangeSerializer
+
+
+
+class BookListView(ListAPIView):
+    serializer_class = BookSerializer
+    queryset = Book.objects.all()
+    filter_backends = [SearchFilter]
+    search_fields = ['author', 'title', 'genr__name'] 

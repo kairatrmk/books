@@ -36,6 +36,8 @@ urlpatterns = [
     path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
     path('api/book_exchanges/', BookExchangeListCreateView.as_view(), name='book-exchange-create'),
     path('api/book_exchanges/<int:pk>/', BookExchangeDetailView.as_view(), name='book-exchange-detail'),
+    path('api/books/search/', BookListView.as_view(), name='search-books'),
+
 
  
 
