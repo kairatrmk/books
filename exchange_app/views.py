@@ -17,8 +17,6 @@ from .serializers import UserSerializer, BookSerializer, BookExchangeSerializer
 from .models import *
 
 
-
-
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
@@ -27,26 +25,21 @@ class BookListCreateView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+
 class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
-
-
-
-
-
-
 class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
 
 
 @api_view(['POST'])
@@ -57,6 +50,7 @@ def custom_obtain_token(request):
     token_obtain_view = TokenObtainPairView.as_view()
     return token_obtain_view(request)
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Allow any user (unauthenticated users) to access this view
 def custom_refresh_token(request):
@@ -64,9 +58,6 @@ def custom_refresh_token(request):
     # For example, you can perform additional checks or validations here
     token_refresh_view = TokenRefreshView.as_view()
     return token_refresh_view(request)
-
-
-
 
 
 @api_view(['POST'])
@@ -96,14 +87,12 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             }
             return Response(data, status=status.HTTP_200_OK)
         return response
-    
-
 
 
 class BookExchangeListCreateView(ListCreateAPIView):
     serializer_class = BookExchangeSerializer
     # authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [AllowAny ]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         return Exchange.objects.filter(user=self.request.user)
@@ -111,14 +100,14 @@ class BookExchangeListCreateView(ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(requester=self.request.user)
 
+
 class BookExchangeDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Exchange.objects.all()
     serializer_class = BookExchangeSerializer
-
 
 
 class BookListView(ListAPIView):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     filter_backends = [SearchFilter]
-    search_fields = ['author', 'title', 'genr__name'] 
+    search_fields = ['author', 'title', 'genr__name']
