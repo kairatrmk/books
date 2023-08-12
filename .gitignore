@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+.venv
+env/
+.idea/
+
+# Editor-specific files
+.vscode/
+*.code-workspace
+*.idea/
+
+# Django
+*.log
+*.pot
+*.pyc
+db.sqlite3
+
+# PostgreSQL
+*.sql
+
+# Local development settings
+local_settings.py
+
+# Compiled Python files
+*.pyc
+__pycache__/
+*.pyo
+
+# macOS
+.DS_Store
+
+# Virtual environment
+venv/
+pyvenv.cfg
+*.egg-info/
+dist/
+build/
+
+# PyCharm
+*.iml
+.idea/
+.idea_modules/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+# Compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+
+# PostgreSQL
+*.sql
+
+# Local development settings
+local_settings.py
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# .vscode
+.vscode/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# Compiled Python files
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# PostgreSQL
+*.sql
+
+# Local development settings
+local_settings.py
