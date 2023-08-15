@@ -111,3 +111,4 @@ class BookListView(ListAPIView):
     queryset = Book.objects.all()
     filter_backends = [SearchFilter]
     search_fields = ['author', 'title', 'genr__name']
+
