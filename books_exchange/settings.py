@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -11,7 +12,7 @@ SECRET_KEY = 'django-insecure-yycw=t^_vbm2^*te$6wyk_wy8ej+rtsm^*plpkkbv#bpg$v^+9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = 'localhost,127.0.0.1'.split(',')
 
 # Application definition
 
@@ -28,19 +29,28 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
 
+    'corsheaders',
+
     'exchange_app',
     'users',
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:3000",
+    'http://localhost:3000',
+]
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'books_exchange.urls'
 
@@ -67,7 +77,7 @@ WSGI_APPLICATION = 'books_exchange.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'book',
+        'NAME': 'inovat',
         'USER': 'postgres',
         'PASSWORD': '1',
         'HOST': 'localhost',
@@ -133,6 +143,9 @@ SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True
 }
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -180,3 +193,19 @@ SIMPLE_JWT = {
     # "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     # "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+# EMAIL_USE_SSL = False
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = 'wyecxtnpzdujrerm'
+EMAIL_HOST_USER = 'exchange.innovat@gmail.com'
+# celery - сервер, который будет выполнять асинхронную отправку, redis - дополнительная бд,
+BROKER_URL = 'redis://127.0.0.1:6379/0'
+BROKER_TRANSPORT = 'redis'
+
+#для использования юзера, которого мы прописали
+AUTH_USER_MODEL = 'users.CustomUser'

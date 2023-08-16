@@ -7,6 +7,13 @@ from django.contrib.auth.models import Group, Permission
 # from django.contrib.auth import get_user_model
 
 
+class City(models.Model):
+    title = models.CharField(max_length=50, db_index=True)
+
+    def __str__(self):
+        return self.title
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -49,7 +56,7 @@ class CustomUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
-    city = models.ForeignKey('City', on_delete=models.PROTECT, null=True)
+    city = models.ForeignKey(City, on_delete=models.PROTECT, null=True)
     favorite_books = models.ManyToManyField('exchange_app.Book', related_name="favorited_by", blank=True)
     groups = models.ManyToManyField(Group, verbose_name=('groups'), blank=True,
         help_text= ('The groups this user belongs to.'),
@@ -73,8 +80,3 @@ class CustomUser(AbstractUser):
         self.activation_code = code
 
 
-class City(models.Model):
-    title = models.CharField(max_length=50, db_index=True)
-
-    def __str__(self):
-        return self.title

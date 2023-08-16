@@ -1,9 +1,12 @@
 from django.db import models
 from django.db.models import CharField
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-# from users.models import CustomUser
-# User = get_user_model()
+from users.models import CustomUser
+
+
+User = get_user_model()
+
 
 class Condition(models.Model):
     name = models.CharField(max_length=155)
@@ -20,8 +23,8 @@ class Book(models.Model):
     genre = models.ForeignKey('Genre', on_delete=models.PROTECT, null=True)
     condition = models.ForeignKey(Condition, on_delete=models.PROTECT)
     description = models.TextField(blank=True)
-    user = models.ForeignKey('users.CustomUser', related_name="books", on_delete=models.CASCADE)
     photo = models.ImageField(upload_to='book_photos/', blank=True, null=True)
+    user_temp = models.ForeignKey(User, related_name="temp_books", on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -42,8 +45,8 @@ class Status(models.Model):
 
 
 class Exchange(models.Model):
-    user_sender = models.ForeignKey('users.CustomUser', related_name='user_exchanges', on_delete=models.CASCADE)
-    user_receiver = models.ForeignKey('users.CustomUser', related_name='user1_exchanges', on_delete=models.CASCADE)
+    user_sender = models.ForeignKey(get_user_model(), related_name='user_exchanges', on_delete=models.CASCADE)
+    user_receiver = models.ForeignKey(get_user_model(), related_name='user1_exchanges', on_delete=models.CASCADE)
     book_sender = models.OneToOneField('exchange_app.Book', related_name='book_exchanges', on_delete=models.CASCADE)
     book_receiver = models.OneToOneField('exchange_app.Book', related_name='book1_exchanges', on_delete=models.CASCADE)
     status = models.ForeignKey('exchange_app.Status', related_name='book_status', on_delete=models.CASCADE, null=True, blank=True)
