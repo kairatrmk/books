@@ -53,3 +53,14 @@ class Exchange(models.Model):
 
     def __str__(self):
         return f"{self.user_sender.email}'s exchange for {self.book_sender.title}"
+
+
+class BookStatus(models.Model):
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('in_exchange', 'In Exchange'),
+        ('completed', 'Completed'),
+    ]
+    book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name='status')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)

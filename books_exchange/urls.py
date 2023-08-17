@@ -22,7 +22,13 @@ urlpatterns = [
     path('api/book_exchanges/<int:pk>/', BookExchangeDetailView.as_view(), name='book-exchange-detail'),
     path('api/books/search/', BookListView.as_view(), name='search-books'),
 
+    path('api/books/favorite/<int:book_id>/', views.AddToFavoriteView.as_view(), name='add-to-favorite'),
+    path('api/books/favorite/', views.FavoriteBooksListView.as_view(), name='favorite-books-list'),
+    path('api/books/favorite/remove/<int:book_id>/', views.RemoveFromFavoriteView.as_view(),
+         name='remove-from-favorite'),
+    path('create-exchange/', ExchangeCreateView.as_view(), name='exchange-create'),
+
     path('swagger<str:format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-re2doc'),
 ]

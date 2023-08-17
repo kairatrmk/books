@@ -1,49 +1,20 @@
-from django.contrib.auth.models import User
-
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from rest_framework import status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status, generics, permissions
-from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.parsers import MultiPartParser, FormParser
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
-from django.db.models import Q
-from .serializers import UserSerializer, BookSerializer, BookExchangeSerializer
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework import serializers
+
 from .models import *
-
-
-# class BookListCreateView(generics.ListCreateAPIView):
-#     queryset = Book.objects.all()
-#     serializer_class = BookSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-#
-#
-# class BookDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = Book.objects.all()
-#     serializer_class = BookSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-#
-#
-# class UserList(generics.ListCreateAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
-#
-#
-# class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
+from .serializers import BookSerializer, BookExchangeSerializer, BookAllSerializer, ExchangeCreateSerializer
+from users.models import CustomUser
 
 
 @api_view(['POST'])
@@ -114,5 +85,55 @@ class BookListView(ListAPIView):
     serializer_class = BookSerializer
     queryset = Book.objects.all()
     filter_backends = [SearchFilter]
-    search_fields = ['author', 'title', 'genr__name']
+    search_fields = ['author', 'title', 'genre__name']
 
+
+class AddToFavoriteView(APIView):
+    permission_classes = [IsAuthenticated]  # Добавляем проверку аутентификации
+
+    def post(self, request, book_id):
+        try:
+            book = Book.objects.get(id=book_id)
+            request.user.favorite_books.add(book)
+            return Response({'message': 'Книга добавлена в избранное'}, status=status.HTTP_200_OK)
+        except Book.DoesNotExist:
+            return Response({'message': 'Книга не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class FavoriteBooksListView(ListAPIView):
+    serializer_class = BookAllSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.favorite_books.all()
+
+
+class RemoveFromFavoriteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_description="Удаление книги из избранного",
+        responses={
+            204: 'Book removed from favorites',
+            404: 'Book not found'
+        }
+    )
+    def delete(self, request, book_id):
+        try:
+            book = Book.objects.get(id=book_id)
+            request.user.favorite_books.remove(book)
+            return Response({'message': 'Книга удалена из избранного'}, status=status.HTTP_204_NO_CONTENT)
+        except Book.DoesNotExist:
+            return Response({'message': 'Книга не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ExchangeCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['user_sender'] = request.user.id  # Set the authenticated user as the sender
+
+        serializer = ExchangeCreateSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

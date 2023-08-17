@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import *
+from .models import Exchange, Book, Genre
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -36,3 +36,53 @@ class BookExchangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exchange
         fields = '__all__'
+
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = '__all__'
+        read_only_fields = ('user', 'available')  # Поля, которые можно только читать
+        content_type = 'application/json'
+
+    def create(self, validated_data):
+        # Добавляем текущего пользователя как владельца книги
+        validated_data['user'] = self.context['request'].user
+        validated_data['available'] = True
+        return super().create(validated_data)
+
+
+class GenreAllSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ['name']
+
+
+class BookAllSerializer(serializers.ModelSerializer):
+    genre = GenreAllSerializer()  # Используем сериализатор GenreSerializer для поля genre
+
+    class Meta:
+        model = Book
+        fields = ['photo', 'title', 'author', 'genre']
+
+
+from rest_framework import serializers
+from .models import Exchange, Book
+
+
+class ExchangeCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exchange
+        fields = '__all__'
+
+    def validate(self, data):
+        user_sender = data['user_sender']
+        book_sender = data['book_sender']
+
+        # Check if the book_sender belongs to the user_sender
+        if not Book.objects.filter(id=book_sender.id, user_temp=user_sender).exists():
+            raise serializers.ValidationError("Invalid book_sender ID or book not owned by user_sender.")
+
+        return data
+
+
