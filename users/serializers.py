@@ -104,3 +104,37 @@ class PasswordResetSerializer(serializers.Serializer):
         subject = 'Восстановление пароля'
         message = f'Для сброса пароля перейдите по ссылке: {reset_url}'
         user.email_user(subject, message)
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = '__all__'
+
+
+
+
+
+class CityDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['title']
+
+
+class CustomAnotherUserSerializer(serializers.ModelSerializer):
+    city_name = CityDetailSerializer(source='city', read_only=True)
+    average_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['image', 'first_name', 'last_name', 'city_name', 'average_rating']
+
+    def get_average_rating(self, obj):
+        return obj.calculate_average_rating()
+
+
+class CustomUserProfileSerializer(CustomAnotherUserSerializer):
+    # Добавьте поля для отображения при просмотре своего профиля
+    class Meta:
+        model = CustomUser
+        fields = ['image', 'first_name', 'last_name', 'city_name', 'average_rating', 'email', 'phone_number']

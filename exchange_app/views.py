@@ -1,6 +1,7 @@
+from django.core.mail import send_mail
 from drf_yasg.utils import swagger_auto_schema
 
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import SearchFilter
@@ -13,8 +14,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import serializers
 
 from .models import *
-from .serializers import BookSerializer, BookExchangeSerializer, BookAllSerializer, ExchangeCreateSerializer
-from users.models import CustomUser
+from .serializers import BookSerializer, BookAllSerializer, ExchangeCreateSerializer, \
+    ExchangeRatingSerializer, ExchangeSerializer
+from users.serializers import RatingSerializer
 
 
 @api_view(['POST'])
@@ -64,21 +66,39 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-class BookExchangeListCreateView(ListCreateAPIView):
-    serializer_class = BookExchangeSerializer
-    # authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [AllowAny]
+class BookListCreateView(generics.ListCreateAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
 
-    def get_queryset(self):
-        return Exchange.objects.filter(user=self.request.user)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
 
-    def perform_create(self, serializer):
-        serializer.save(requester=self.request.user)
+        # You can customize the response data here if needed
+        response_data = {
+            'message': 'List of all books retrieved successfully',
+            'data': serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # You can customize the response data here if needed
+        response_data = {
+            'message': 'Book created successfully',
+            'data': serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
-class BookExchangeDetailView(RetrieveUpdateDestroyAPIView):
-    queryset = Exchange.objects.all()
-    serializer_class = BookExchangeSerializer
+class BookDetailView(generics.RetrieveAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
 
 
 class BookListView(ListAPIView):
@@ -86,6 +106,18 @@ class BookListView(ListAPIView):
     queryset = Book.objects.all()
     filter_backends = [SearchFilter]
     search_fields = ['author', 'title', 'genre__name']
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        # You can customize the response data here if needed
+        response_data = {
+            'message': 'Book details retrieved successfully',
+            'data': serializer.data
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class AddToFavoriteView(APIView):
@@ -134,6 +166,101 @@ class ExchangeCreateView(APIView):
 
         serializer = ExchangeCreateSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            exchange = serializer.save()
+
+            # Set initial status when creating the exchange
+            initial_status = Status.objects.get(name="Request sent")
+            exchange.status = initial_status
+            exchange.save()
+
+            # Send email to user_receiver
+            user_receiver = exchange.user_receiver  # Adjust this according to your serializer fields
+            subject = 'Exchange Offer Received'
+            message = f'Hello {user_receiver.username}, you have received an exchange offer.'
+            from_email = 'exchange.innovat@example.com'  # Set your sender email address
+            recipient_list = [user_receiver.email]
+
+            send_mail(subject, message, from_email, recipient_list)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, *args, **kwargs):
+        exchange_id = request.data.get('exchange_id')  # Assuming you send the exchange ID in the request data
+        status_completed = Status.objects.get(name="Exchange completed")
+
+        try:
+            exchange = Exchange.objects.get(id=exchange_id)
+
+            if exchange.status == status_completed:
+                serializer = ExchangeRatingSerializer(instance=exchange, data=request.data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response({"message": "Ratings updated successfully."}, status=status.HTTP_200_OK)
+                else:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                exchange.status = status_completed
+                exchange.save()
+                return Response({"message": "Exchange status changed to 'Exchange completed'."},
+                                status=status.HTTP_200_OK)
+
+        except Exchange.DoesNotExist:
+            return Response({"error": "Exchange not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ExchangeDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Exchange.objects.all()
+    serializer_class = ExchangeSerializer
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+
+        if instance.status == 'Запрос принят':
+            self.send_notification(instance.sender.email, "Ваш запрос на обмен был принят.")
+
+        if instance.status == 'Детали обмена согласованы':
+            self.send_notification(instance.sender.email, "Детали обмена были успешно согласованы.")
+            self.send_notification(instance.receiver.email, "Детали обмена были успешно согласованы.")
+
+        if instance.status == 'Отклонен':
+            self.send_notification(instance.receiver.email, "Отклонен")
+            self.send_notification(instance.sender.email, "Отклонен")
+
+        if instance.status == 'Отменен':
+            self.send_notification(instance.sender.email, "Отменен")
+            self.send_notification(instance.receiver.email, "Отменен")
+
+        if instance.status == 'Обмен завершен':
+            # Создайте объект рейтинга и свяжите его с запросом на обмен
+            rating_data = {
+                'from_user': instance.sender,
+                'to_user': instance.receiver,
+                'rating': 5,  # Здесь вы можете использовать любую оценку, которую хотите
+                'exchange_request': instance,
+            }
+            rating_serializer = RatingSerializer(data=rating_data)
+            if rating_serializer.is_valid():
+                rating_serializer.save()
+                self.send_notification(instance.sender.email,
+                                       "Обмен книгами успешно завершен. Не забудьте оставить рейтинг пользователю")
+                self.send_notification(instance.receiver.email,
+                                       "Обмен книгами успешно завершен. Не забудьте оставить рейтинг пользователю")
+            else:
+                return Response(rating_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def send_notification(self, recipient_email, message):
+        subject = 'Уведомление о запросе на обмен'
+        from_email = 'mybook.innovat@gmail.com'
+        recipient_list = [recipient_email]
+        send_mail(subject, message, from_email, recipient_list)
+
+
+class ExchangeListView(ListAPIView):
+    serializer_class = ExchangeSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Exchange.objects.filter(sender=user) | Exchange.objects.filter(receiver=user)

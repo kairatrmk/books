@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+
+from users.serializers import RatingSerializer
 from .models import Exchange, Book, Genre
+from users.models import Rating
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -84,5 +87,19 @@ class ExchangeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid book_sender ID or book not owned by user_sender.")
 
         return data
+
+
+class ExchangeSerializer(serializers.ModelSerializer):
+    ratings = RatingSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Exchange
+        fields = '__all__'
+
+
+class ExchangeRatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exchange
+        fields = ['user_sender_rating', 'user_receiver_rating']
 
 

@@ -3,6 +3,10 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import Group, Permission
+from django.db.models import Avg
+from rest_framework.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 # from django.contrib.auth import get_user_model
 
@@ -79,4 +83,23 @@ class CustomUser(AbstractUser):
         code = str(uuid.uuid4())
         self.activation_code = code
 
+    def calculate_average_rating(self):
+        received_ratings = self.received_ratings.all()  # Получаем оценки, которые пользователь получил
 
+        if received_ratings.exists():
+            average_rating = received_ratings.aggregate(Avg('rating'))['rating__avg']
+            return average_rating
+        else:
+            return 0.0  # Возвращаем 0, если нет оценок
+
+
+class Rating(models.Model):
+    from_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='given_ratings')
+    to_user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_ratings')
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(null=True, blank=True)
+    exchange_request = models.ForeignKey('exchange_app.Exchange', on_delete=models.CASCADE, related_name='ratings', default=None)
+
+    def clean(self):
+        if self.from_user == self.to_user:
+            raise ValidationError("Нельзя оценить самого себя.")

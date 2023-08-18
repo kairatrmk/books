@@ -50,17 +50,10 @@ class Exchange(models.Model):
     book_sender = models.OneToOneField('exchange_app.Book', related_name='book_exchanges', on_delete=models.CASCADE)
     book_receiver = models.OneToOneField('exchange_app.Book', related_name='book1_exchanges', on_delete=models.CASCADE)
     status = models.ForeignKey('exchange_app.Status', related_name='book_status', on_delete=models.CASCADE, null=True, blank=True)
+    user_sender_rating = models.PositiveIntegerField(null=True, blank=True)
+    user_receiver_rating = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user_sender.email}'s exchange for {self.book_sender.title}"
 
 
-class BookStatus(models.Model):
-    STATUS_CHOICES = [
-        ('available', 'Available'),
-        ('in_exchange', 'In Exchange'),
-        ('completed', 'Completed'),
-    ]
-    book = models.OneToOneField(Book, on_delete=models.CASCADE, related_name='status')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
-    user = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)

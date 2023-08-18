@@ -1,8 +1,6 @@
-from django.shortcuts import render
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from drf_yasg import openapi
-
 from users.serializers import *
 from rest_framework import status
 
@@ -21,6 +19,8 @@ from django.contrib.auth.tokens import default_token_generator
 
 from rest_framework import generics
 from .models import *
+from exchange_app.models import Exchange
+
 
 
 class RegisterApiView(APIView):
@@ -127,3 +127,50 @@ class PasswordResetConfirmView(APIView):
         else:
             return Response({'message': 'Необходимо предоставить токен, uidb64 и новый пароль.'},
                             status=status.HTTP_400_BAD_REQUEST)
+
+
+class RatingCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        exchange_request_id = request.data.get("exchange_request")
+        try:
+            exchange_request = Exchange.objects.get(pk=exchange_request_id)
+        except Exchange.DoesNotExist:
+            return Response({"detail": "Запрос на обмен не найден"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if exchange_request.status != 'Обмен завершен':
+            return Response({"detail": "Рейтинг можно выставлять только после успешного завершения обмена"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = RatingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomUserDetailView(RetrieveAPIView):
+    queryset = CustomUser.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.user.id == self.kwargs['pk']:
+            return CustomUserProfileSerializer  # Используйте CustomUserProfileSerializer для текущего пользователя
+        return CustomAnotherUserSerializer  # Используйте CustomUserDetailSerializer для других пользователей
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        user_id = self.kwargs['pk']
+        queryset = queryset.annotate(average_rating=Avg('received_ratings__rating'))
+        obj = queryset.get(id=user_id)
+        return obj
+
+
+class UserRatingView(APIView):
+    def get(self, request, pk):
+        user = get_object_or_404(CustomUser, pk=pk)
+        received_ratings = user.received_ratings.all()
+
+        if received_ratings.exists():
+            average_rating = received_ratings.aggregate(Avg('rating'))['rating__avg']
+        else:
+            average_rating = 0.0
+
+        return Response({"average_rating": average_rating})

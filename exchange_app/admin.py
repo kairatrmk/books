@@ -6,6 +6,7 @@ from .models import *
 
 
 class ExchangeAdmin(admin.ModelAdmin):
+    list_display = "id", "user_sender", "book_sender", "user_receiver", "book_receiver", "status"
     def save_model(self, request, obj, form, change):
         # Validate the data using the serializer
         serializer = ExchangeCreateSerializer(data={
@@ -32,10 +33,14 @@ class GenreAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
+class StatusAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
+
 admin.site.register(Book, BookAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Exchange, ExchangeAdmin)
-admin.site.register(Status)
+admin.site.register(Status, StatusAdmin)
 admin.site.register(Condition)
 
 
