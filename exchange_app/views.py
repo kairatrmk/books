@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +16,7 @@ from rest_framework import serializers
 
 from .models import *
 from .serializers import BookSerializer, BookAllSerializer, ExchangeCreateSerializer, \
-    ExchangeRatingSerializer, ExchangeSerializer
+    ExchangeRatingSerializer, ExchangeSerializer, GenreSerializer
 from users.serializers import RatingSerializer
 
 
@@ -66,6 +67,18 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         return response
 
 
+@swagger_auto_schema(request_body=GenreSerializer)
+class GenreListView(generics.ListCreateAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
+@swagger_auto_schema(request_body=GenreSerializer)
+class GenreDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
 class BookListCreateView(generics.ListCreateAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
@@ -99,6 +112,14 @@ class BookListCreateView(generics.ListCreateAPIView):
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+
+class UserBookListView(generics.ListAPIView):
+    serializer_class = BookAllSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']  # Получаем user_id из URL
+        return Book.objects.filter(user_id=user_id)
 
 
 class BookListView(ListAPIView):
@@ -158,6 +179,25 @@ class RemoveFromFavoriteView(APIView):
         except Book.DoesNotExist:
             return Response({'message': 'Книга не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
+
+class BookGenreListView(ListAPIView):
+    serializer_class = BookAllSerializer
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 12
+    pagination_class.page_query_param = 'page'
+    pagination_class.page_size_query_param = 'page_size'
+
+    def get_queryset(self):
+        genre_id = self.kwargs['genre_id']
+        return Book.objects.filter(genre_id=genre_id)
+
+from rest_framework.pagination import PageNumberPagination
+
+class BooksByGenreView(APIView):
+    def get(self, request, genre):
+        books = Book.objects.filter(genre=genre)
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data)
 
 class ExchangeCreateView(APIView):
     def post(self, request, *args, **kwargs):

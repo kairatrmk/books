@@ -25,6 +25,7 @@ class Book(models.Model):
     description = models.TextField(blank=True)
     photo = models.ImageField(upload_to='book_photos/', blank=True, null=True)
     user_temp = models.ForeignKey(User, related_name="temp_books", on_delete=models.CASCADE, null=True, blank=True)
+    language = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -32,6 +33,7 @@ class Book(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=155, db_index=True)
+    photo = models.ImageField(upload_to='genre_photos/', blank=True, null=True)
 
     def __str__(self):
         return self.name

@@ -26,11 +26,11 @@ class ExchangeAdmin(admin.ModelAdmin):
 
 
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition', 'description', 'photo')
+    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition', 'photo')
 
 
 class GenreAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('id', 'name',)
 
 
 class StatusAdmin(admin.ModelAdmin):

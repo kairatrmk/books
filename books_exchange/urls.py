@@ -16,20 +16,22 @@ urlpatterns = [
     path('api/token/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-
     # Эндпоинт для обновления токена доступа
     path('api/books/', views.BookListCreateView.as_view(), name='book-list-create'),
     path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
     path('api/books/search/', BookListView.as_view(), name='search-books'),
+    path('api/books/user/<int:user_id>/', views.UserBookListView.as_view(), name='user-book-list'),
+    path('api/books/genre/<str:genre>/', BooksByGenreView.as_view(), name='books-by-genre'),
 
-
+    path('api/genres/', views.GenreListView.as_view(), name='genre-list'),
+    path('api/genres/<int:pk>/', views.GenreDetailView.as_view(), name='genre-detail'),
 
     path('api/books/favorite/<int:book_id>/', views.AddToFavoriteView.as_view(), name='add-to-favorite'),
     path('api/books/favorite/', views.FavoriteBooksListView.as_view(), name='favorite-books-list'),
     path('api/books/favorite/remove/<int:book_id>/', views.RemoveFromFavoriteView.as_view(),
-
-
          name='remove-from-favorite'),
+
+    path('api/books/genre/<int:genre_id>/', views.BookGenreListView.as_view(), name='genre-book-list'),
 
     path('exchange/', views.ExchangeListView.as_view(), name='exchange-request-list'),
     path('exchange/create/', ExchangeCreateView.as_view(), name='exchange-create'),

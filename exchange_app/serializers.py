@@ -55,6 +55,12 @@ class BookSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = '__all__'
+
+
 class GenreAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre

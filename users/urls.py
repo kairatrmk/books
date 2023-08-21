@@ -4,7 +4,10 @@ from users import views
 urlpatterns = [
 
     path('api/ratings/create/', views.RatingCreateView.as_view(), name='create-rating'),
-    path('api/user/<int:pk>/', views.CustomUserDetailView.as_view(), name='user-detail'),
+    path('+'
+         ''
+         ''
+         '/<int:pk>/', views.CustomUserDetailView.as_view(), name='user-detail'),
     path('api/user/<int:pk>/rating/', views.UserRatingView.as_view(), name='user-rating'),
 
 
@@ -21,6 +24,9 @@ urlpatterns = [
 
 
     path('update/<int:id>/', views.UpdateUserProfileView.as_view(), name='update-profile'),
+
+    path('city/', views.CityListView.as_view(), name='city-list'),
+
 ]
 
 

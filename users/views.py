@@ -29,6 +29,7 @@ class RegisterApiView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
         return Response('Вы успешно зарегестрировались! Вам отправлено сообщение на почту.', status=201)
 
 
@@ -174,3 +175,9 @@ class UserRatingView(APIView):
             average_rating = 0.0
 
         return Response({"average_rating": average_rating})
+
+
+@swagger_auto_schema(request_body=CitySerializer)
+class CityListView(generics.ListCreateAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer

@@ -112,9 +112,6 @@ class RatingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
-
-
 class CityDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = City
@@ -138,3 +135,9 @@ class CustomUserProfileSerializer(CustomAnotherUserSerializer):
     class Meta:
         model = CustomUser
         fields = ['image', 'first_name', 'last_name', 'city_name', 'average_rating', 'email', 'phone_number']
+
+
+class CitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = '__all__'
