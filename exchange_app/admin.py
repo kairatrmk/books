@@ -28,7 +28,7 @@ class ExchangeAdmin(admin.ModelAdmin):
 
 class BookImageInline(admin.TabularInline):  # Или admin.StackedInline
     model = BookImage
-    extra = 1
+    extra = 7
 
 
 class BookAdmin(admin.ModelAdmin):

@@ -1,3 +1,6 @@
+import base64
+
+from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from drf_yasg.utils import swagger_auto_schema
 
@@ -8,6 +11,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -109,11 +113,18 @@ class BookListCreateView(generics.ListCreateAPIView):
             genre=serializer.validated_data['genre'],
             condition=serializer.validated_data['condition'],
             description=serializer.validated_data['description'],
-            photo=serializer.validated_data['photo'],
-            language=serializer.validated_data['language'],
-            user_temp=user  # Связь с текущим пользователем
+            user_temp=user,
+            language=serializer.validated_data['language']
         )
         book.save()
+
+        images_data = serializer.validated_data.get('images')
+        if images_data:
+            for image_base64 in images_data:
+                image_data = base64.b64decode(image_base64)
+                image = ContentFile(image_data, name='image.jpg')  # Замените имя на подходящее
+                book_image = BookImage(book=book, image=image)
+                book_image.save()
 
         response_data = {
             'message': 'Book created successfully',
