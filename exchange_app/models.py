@@ -24,7 +24,7 @@ class Book(models.Model):
     condition = models.ForeignKey(Condition, on_delete=models.PROTECT)
     description = models.TextField(blank=True)
     photo = models.ImageField(upload_to='book_photos/', blank=True, null=True)
-    user_temp = models.ForeignKey(User, related_name="temp_books", on_delete=models.CASCADE, null=True, blank=True)
+    user_temp = models.ForeignKey(CustomUser, related_name="temp_books", on_delete=models.CASCADE, null=True, blank=True)
     language = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):

@@ -21,7 +21,6 @@ urlpatterns = [
     path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
     path('api/books/search/', BookListView.as_view(), name='search-books'),
     path('api/books/user/<int:user_id>/', views.UserBookListView.as_view(), name='user-book-list'),
-    path('api/books/genre/<str:genre>/', BooksByGenreView.as_view(), name='books-by-genre'),
 
     path('api/genres/', views.GenreListView.as_view(), name='genre-list'),
     path('api/genres/<int:pk>/', views.GenreDetailView.as_view(), name='genre-detail'),

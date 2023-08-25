@@ -98,9 +98,23 @@ class BookListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
 
-        # You can customize the response data here if needed
+        # Получите текущего пользователя из запроса
+        user = self.request.user
+
+        # Создайте книгу, связанную с текущим пользователем
+        book = Book(
+            title=serializer.validated_data['title'],
+            author=serializer.validated_data['author'],
+            genre=serializer.validated_data['genre'],
+            condition=serializer.validated_data['condition'],
+            description=serializer.validated_data['description'],
+            photo=serializer.validated_data['photo'],
+            language=serializer.validated_data['language'],
+            user_temp=user  # Связь с текущим пользователем
+        )
+        book.save()
+
         response_data = {
             'message': 'Book created successfully',
             'data': serializer.data
@@ -119,7 +133,7 @@ class UserBookListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.kwargs['user_id']  # Получаем user_id из URL
-        return Book.objects.filter(user_id=user_id)
+        return Book.objects.filter(user_temp_id=user_id)
 
 
 class BookListView(ListAPIView):
@@ -193,11 +207,6 @@ class BookGenreListView(ListAPIView):
 
 from rest_framework.pagination import PageNumberPagination
 
-class BooksByGenreView(APIView):
-    def get(self, request, genre):
-        books = Book.objects.filter(genre=genre)
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data)
 
 class ExchangeCreateView(APIView):
     def post(self, request, *args, **kwargs):

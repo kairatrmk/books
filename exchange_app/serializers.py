@@ -23,16 +23,16 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-class BookSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Book
-        fields = '__all__'
-        read_only_fields = ('user',)  # Поля, которые можно только читать
-
-    def create(self, validated_data):
-        # Добавляем текущего пользователя как владельца книги
-        validated_data['user'] = self.context['request'].user
-        return super().create(validated_data)
+# class BookSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Book
+#         fields = '__all__'
+#         read_only_fields = ('user',)  # Поля, которые можно только читать
+#
+#     def create(self, validated_data):
+#         # Добавляем текущего пользователя как владельца книги
+#         validated_data['user'] = self.context['request'].user
+#         return super().create(validated_data)
 
 
 class BookExchangeSerializer(serializers.ModelSerializer):
@@ -50,7 +50,7 @@ class BookSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Добавляем текущего пользователя как владельца книги
-        validated_data['user'] = self.context['request'].user
+        validated_data['user_temp'] = self.context['request'].user
         validated_data['available'] = True
         return super().create(validated_data)
 
