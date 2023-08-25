@@ -103,3 +103,4 @@ class Rating(models.Model):
     def clean(self):
         if self.from_user == self.to_user:
             raise ValidationError("Нельзя оценить самого себя.")
+

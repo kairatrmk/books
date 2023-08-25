@@ -1,9 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from exchange_app.views import *
 from exchange_app import views
 from swagger import schema_view
@@ -35,6 +32,10 @@ urlpatterns = [
     path('exchange/', views.ExchangeListView.as_view(), name='exchange-request-list'),
     path('exchange/create/', ExchangeCreateView.as_view(), name='exchange-create'),
     path('api/exchange-requests/<int:pk>/', views.ExchangeDetailView.as_view(), name='exchange-request-detail'),
+
+    path('api/exchanges/received/', views.ExchangeReceivedListView.as_view(), name='exchange-received-list'),
+    path('api/exchanges/sent/', views.ExchangeSentListView.as_view(), name='exchange-sent-list'),
+    path('api/exchanges/completed/', views.CompletedExchangeListView.as_view(), name='completed-exchange-list'),
 
     path('swagger<str:format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

@@ -72,17 +72,14 @@ class BookAllSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['photo', 'title', 'author', 'genre']
-
-
-from rest_framework import serializers
-from .models import Exchange, Book
+        fields = ['title', 'author', 'genre', 'images']
 
 
 class ExchangeCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exchange
         fields = '__all__'
+        read_only_fields = ['status']  # Add this line to make the status field read-only
 
     def validate(self, data):
         user_sender = data['user_sender']

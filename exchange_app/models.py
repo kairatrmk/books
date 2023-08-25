@@ -23,12 +23,19 @@ class Book(models.Model):
     genre = models.ForeignKey('Genre', on_delete=models.PROTECT, null=True)
     condition = models.ForeignKey(Condition, on_delete=models.PROTECT)
     description = models.TextField(blank=True)
-    photo = models.ImageField(upload_to='book_photos/', blank=True, null=True)
     user_temp = models.ForeignKey(CustomUser, related_name="temp_books", on_delete=models.CASCADE, null=True, blank=True)
     language = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
         return self.title
+
+
+class BookImage(models.Model):
+    book = models.ForeignKey(Book, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='book_images/')
+
+    def __str__(self):
+        return f"Image for {self.book.title}"
 
 
 class Genre(models.Model):

@@ -313,3 +313,27 @@ class ExchangeListView(ListAPIView):
     def get_queryset(self):
         user = self.request.user
         return Exchange.objects.filter(sender=user) | Exchange.objects.filter(receiver=user)
+
+
+class ExchangeReceivedListView(ListAPIView):
+    serializer_class = ExchangeSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Exchange.objects.filter(user_receiver=user)
+
+
+class ExchangeSentListView(ListAPIView):
+    serializer_class = ExchangeSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Exchange.objects.filter(user_sender=user)
+
+
+class CompletedExchangeListView(ListAPIView):
+    serializer_class = ExchangeSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Exchange.objects.filter(status__name='Exchange completed', user_sender=user) | Exchange.objects.filter(status__name='Exchange completed', user_receiver=user)

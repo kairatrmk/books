@@ -2,11 +2,12 @@ from django.contrib import admin
 from users.models import CustomUser
 from exchange_app.serializers import ExchangeCreateSerializer
 
-from .models import *
+from .models import Book, BookImage, Exchange, Genre, Status, Condition
 
 
 class ExchangeAdmin(admin.ModelAdmin):
     list_display = "id", "user_sender", "book_sender", "user_receiver", "book_receiver", "status"
+
     def save_model(self, request, obj, form, change):
         # Validate the data using the serializer
         serializer = ExchangeCreateSerializer(data={
@@ -25,8 +26,14 @@ class ExchangeAdmin(admin.ModelAdmin):
             raise ValueError(serializer.errors)
 
 
+class BookImageInline(admin.TabularInline):  # Или admin.StackedInline
+    model = BookImage
+    extra = 1
+
+
 class BookAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition', 'photo')
+    inlines = [BookImageInline]
+    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition')
 
 
 class GenreAdmin(admin.ModelAdmin):
@@ -37,11 +44,15 @@ class StatusAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
 
 
+class ConditionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
+
 admin.site.register(Book, BookAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Exchange, ExchangeAdmin)
 admin.site.register(Status, StatusAdmin)
-admin.site.register(Condition)
+admin.site.register(Condition, ConditionAdmin)
 
 
 
