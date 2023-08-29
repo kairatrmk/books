@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from users.serializers import RatingSerializer
-from .models import Exchange, Book, Genre
+from .models import Exchange, Book, Genre, Condition
 from users.models import Rating
 
 
@@ -39,9 +39,13 @@ class BookExchangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exchange
         fields = '__all__'
+        lookup_field = 'name'
 
 
 class BookSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(slug_field='name', queryset=Genre.objects.all())
+    condition = serializers.SlugRelatedField(slug_field='name', queryset=Condition.objects.all())
+
     class Meta:
         model = Book
         fields = '__all__'
@@ -59,6 +63,7 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = '__all__'
+        lookup_field = 'name'
 
 
 class GenreAllSerializer(serializers.ModelSerializer):

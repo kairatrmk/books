@@ -29,21 +29,26 @@ User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(min_length=6, write_only=True, required=True)
+    city_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'password_confirm', 'phone_number', 'first_name', 'last_name', 'city']
+        fields = ['email', 'password', 'password_confirm', 'phone_number', 'first_name', 'last_name', 'city', 'city_name']
 
     def validate(self, attrs):
         p1 = attrs.get('password')
         p2 = attrs.pop('password_confirm')
-
         if p1 != p2:
             raise serializers.ValidationError("Passwords don't same!")
         return attrs
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        city_name = validated_data.pop('city_name')  # Извлекаем имя города
+        city = City.objects.get(title=city_name)  # Находим город по имени
+
+        validated_data['city'] = city  # Присваиваем город
+
+        user = CustomUser.objects.create_user(**validated_data)
         code = user.activation_code
         send_confirmation_email(user.email, code)
         return user
@@ -116,6 +121,7 @@ class CityDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = ['title']
+        lookup_field = 'title'
 
 
 class CustomAnotherUserSerializer(serializers.ModelSerializer):
@@ -141,3 +147,4 @@ class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = '__all__'
+        # lookup_field = 'name'
