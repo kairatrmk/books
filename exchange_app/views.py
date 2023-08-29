@@ -12,7 +12,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -88,10 +88,15 @@ class BookListCreateView(generics.ListCreateAPIView):
     serializer_class = BookSerializer
 
     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        user = self.request.user
 
-        # You can customize the response data here if needed
+        # Фильтруем книги в зависимости от статуса аутентификации пользователя
+        if user.is_authenticated:
+            queryset = Book.objects.filter(available=True).exclude(user_temp=user)
+        else:
+            queryset = Book.objects.filter(available=True)
+
+        serializer = self.get_serializer(queryset, many=True)
         response_data = {
             'message': 'List of all books retrieved successfully',
             'data': serializer.data
