@@ -22,7 +22,7 @@ from .models import *
 from exchange_app.models import Exchange
 
 
-
+# View for user registration
 class RegisterApiView(APIView):
     @swagger_auto_schema(request_body=RegisterSerializer)
     def post(self, request):
@@ -36,6 +36,7 @@ class RegisterApiView(APIView):
 User = get_user_model()
 
 
+# View for user activation
 class ActivationApiView(APIView):
     def get(self, request, activation_code):
         try:
@@ -49,6 +50,7 @@ class ActivationApiView(APIView):
             return Response({'msg': 'неверный код'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# View for user login
 class UserLoginView(TokenObtainPairView):
     serializer_class = UserLoginSerializer
 
@@ -64,6 +66,7 @@ class UserLoginView(TokenObtainPairView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# View for updating user profile
 class UpdateUserProfileView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserProfileSerializer
@@ -74,6 +77,7 @@ class UpdateUserProfileView(generics.UpdateAPIView):
         serializer.save(user=self.request.user)
 
 
+# Custom Token Refresh View
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -85,6 +89,7 @@ class CustomTokenRefreshView(TokenRefreshView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# View for requesting password reset
 class PasswordResetRequestView(APIView):
     @swagger_auto_schema(request_body=PasswordResetSerializer)
     def post(self, request):
@@ -95,6 +100,7 @@ class PasswordResetRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# View for confirming password reset
 class PasswordResetConfirmView(APIView):
     @swagger_auto_schema(
         request_body=openapi.Schema(
@@ -130,6 +136,7 @@ class PasswordResetConfirmView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
 
+# View for creating a rating for an exchange
 class RatingCreateView(APIView):
     def post(self, request, *args, **kwargs):
         exchange_request_id = request.data.get("exchange_request")

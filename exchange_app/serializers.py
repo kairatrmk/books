@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from users.serializers import RatingSerializer
-from .models import Exchange, Book, Genre, Condition
+from .models import Exchange, Book, Genre, Condition, BookImage
 from users.models import Rating
 
 
@@ -23,18 +23,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-# class BookSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Book
-#         fields = '__all__'
-#         read_only_fields = ('user',)  # Поля, которые можно только читать
-#
-#     def create(self, validated_data):
-#         # Добавляем текущего пользователя как владельца книги
-#         validated_data['user'] = self.context['request'].user
-#         return super().create(validated_data)
-
-
 class BookExchangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exchange
@@ -42,9 +30,16 @@ class BookExchangeSerializer(serializers.ModelSerializer):
         lookup_field = 'name'
 
 
+class BookImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookImage
+        fields = ('image',)
+
+
 class BookSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(slug_field='name', queryset=Genre.objects.all())
     condition = serializers.SlugRelatedField(slug_field='name', queryset=Condition.objects.all())
+    images = serializers.SerializerMethodField()  # Добавляем изображения
 
     class Meta:
         model = Book
@@ -57,6 +52,12 @@ class BookSerializer(serializers.ModelSerializer):
         validated_data['user_temp'] = self.context['request'].user
         validated_data['available'] = True
         return super().create(validated_data)
+
+    def get_images(self, obj):
+        # Получаем все изображения для данной книги
+        images = BookImage.objects.filter(book=obj)
+        image_urls = [self.context['request'].build_absolute_uri(image.image.url) for image in images]
+        return image_urls
 
 
 class GenreSerializer(serializers.ModelSerializer):

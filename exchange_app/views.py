@@ -234,7 +234,7 @@ class ExchangeCreateView(APIView):
             exchange = serializer.save()
 
             # Set initial status when creating the exchange
-            initial_status = Status.objects.get(name="Request sent")
+            initial_status = Status.objects.get(name="Ожидание подтверждения")
             exchange.status = initial_status
             exchange.save()
 

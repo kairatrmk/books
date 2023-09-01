@@ -1,6 +1,7 @@
 from django.contrib import admin
 from users.models import CustomUser
 from exchange_app.serializers import ExchangeCreateSerializer
+from django.utils.html import format_html
 
 from .models import Book, BookImage, Exchange, Genre, Status, Condition
 
@@ -33,7 +34,17 @@ class BookImageInline(admin.TabularInline):  # Или admin.StackedInline
 
 class BookAdmin(admin.ModelAdmin):
     inlines = [BookImageInline]
-    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition')
+    list_display = ('id', 'user_temp', 'available', 'title', 'author', 'genre', 'condition', 'display_images')
+
+    def display_images(self, obj):
+        # Получите изображение книги
+        images = obj.images.all()
+        if images:
+            # Отобразите первое изображение
+            return format_html('<img src="{}" width="50" height="50" />', images[0].image.url)
+        return "No Image"
+
+    display_images.short_description = 'Images'
 
 
 class GenreAdmin(admin.ModelAdmin):
