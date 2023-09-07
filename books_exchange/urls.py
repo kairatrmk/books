@@ -16,6 +16,7 @@ urlpatterns = [
     # Эндпоинт для обновления токена доступа
     path('api/books/', views.BookListCreateView.as_view(), name='book-list-create'),
     path('api/books/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
+    path('api/books/<int:pk>/update/', BookUpdateView.as_view(), name='book-update'),
     path('api/books/search/', BookListView.as_view(), name='search-books'),
     path('api/books/user/<int:user_id>/', views.UserBookListView.as_view(), name='user-book-list'),
 
@@ -28,6 +29,8 @@ urlpatterns = [
          name='remove-from-favorite'),
 
     path('api/books/genre/<int:genre_id>/', views.BookGenreListView.as_view(), name='genre-book-list'),
+
+    path('conditions/', ConditionListCreateView.as_view(), name='condition-list-create'),
 
     path('exchange/', views.ExchangeListView.as_view(), name='exchange-request-list'),
     path('exchange/create/', ExchangeCreateView.as_view(), name='exchange-create'),

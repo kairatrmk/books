@@ -19,8 +19,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework import serializers
 
 from .models import *
+from .permissions import IsOwnerOrReadOnly
 from .serializers import BookSerializer, BookAllSerializer, ExchangeCreateSerializer, \
-    ExchangeRatingSerializer, ExchangeSerializer, GenreSerializer
+    ExchangeRatingSerializer, ExchangeSerializer, GenreSerializer, ConditionSerializer
 from users.serializers import RatingSerializer
 
 
@@ -139,9 +140,21 @@ class BookListCreateView(generics.ListCreateAPIView):
         return Response(response_data, status=status.HTTP_201_CREATED)
 
 
+class BookUpdateView(generics.UpdateAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [IsOwnerOrReadOnly]  # Применяем кастомное разрешение здесь
+
+
 class BookDetailView(generics.RetrieveAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+
+class BookUpdateView(generics.UpdateAPIView):
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [IsOwnerOrReadOnly]
 
 
 class UserBookListView(generics.ListAPIView):
@@ -208,6 +221,11 @@ class RemoveFromFavoriteView(APIView):
             return Response({'message': 'Книга удалена из избранного'}, status=status.HTTP_204_NO_CONTENT)
         except Book.DoesNotExist:
             return Response({'message': 'Книга не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ConditionListCreateView(generics.ListCreateAPIView):
+    queryset = Condition.objects.all()
+    serializer_class = ConditionSerializer
 
 
 class BookGenreListView(ListAPIView):

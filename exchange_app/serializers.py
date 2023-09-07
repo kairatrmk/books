@@ -60,6 +60,12 @@ class BookSerializer(serializers.ModelSerializer):
         return image_urls
 
 
+class ConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Condition
+        fields = '__all__'
+
+
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
